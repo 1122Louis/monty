@@ -1,11 +1,11 @@
-#ifndef MONTY_H
-#define MONTY_H
-
+#ifndef _MONTY_H_
+#define _MONTY_H_
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
+#define STACK 0
+#define QUEUE 1
+
+#define READ 0
+#define WRITE 1
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -14,7 +14,7 @@
  * @next: points to the next element of the stack (or queue)
  *
  * Description: doubly linked list node structure
- * for stack, queues, LIFO, FIFO Holberton project
+ * for stack, queues, LIFO, FIFO
  */
 typedef struct stack_s
 {
@@ -29,7 +29,7 @@ typedef struct stack_s
  * @f: function to handle the opcode
  *
  * Description: opcode and its function
- * for stack, queues, LIFO, FIFO Holberton project
+ * for stack, queues, LIFO, FIFO
  */
 typedef struct instruction_s
 {
@@ -38,98 +38,236 @@ typedef struct instruction_s
 } instruction_t;
 
 /**
- * struct args_s - structure of arguments from main
- * @av: name of the file from the command line
- * @ac: number of arguments from main
- * @line_number: number of the current line in the file
- *
- * Description: arguments passed to main from the command line
- * used in different functions, organized in a struct for clarity
+ * exec - execute a Monty statement
+ * @stack: stack/queue data structure
+ * @tokens: the command, tokenized to strings
+ * @line_number: current line number
+ * Return: EXIT_SUCCESS, EXIT_FAILURE
  */
-typedef struct args_s
-{
-	char *av;
-	int ac;
-	unsigned int line_number;
-} args_t;
+int exec(stack_t **stack, char **tokens, unsigned int line_number);
 
 /**
- * struct data_s - extern data to access inside functions
- * @line: line from the file
- * @words: parsed line
- * @stack: pointer to the stack
- * @fptr: file pointer
- * @qflag: flag for queue or stack
+ * _free - free a doubly linked list
+ * @head: doubly linked list to free
+ * Return: void
  */
-typedef struct data_s
-{
-	char *line;
-	char **words;
-	stack_t *stack;
-	FILE *fptr;
-	int qflag;
-} data_t;
+void _free(stack_t *head);
 
-typedef stack_t dlistint_t;
+/**
+ * pall - prints all elements of a doubly linked list
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void pall(stack_t **stack, unsigned int line_number);
 
-extern data_t data;
+/**
+ * pint - returns the value at the top of the stack or front of queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void pint(stack_t **stack, unsigned int line_number);
 
-#define DATA_INIT {NULL, NULL, NULL, NULL, 0}
+/**
+ * pchar - returns the value at the top of the stack or front of queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void pchar(stack_t **stack, unsigned int line_number);
 
-#define USAGE "USAGE: monty file\n"
-#define FILE_ERROR "Error: Can't open file %s\n"
-#define UNKNOWN "L%u: unknown instruction %s\n"
-#define MALLOC_FAIL "Error: malloc failed\n"
-#define PUSH_FAIL "L%u: usage: push integer\n"
-#define PINT_FAIL "L%u: can't pint, stack empty\n"
-#define POP_FAIL "L%u: can't pop an empty stack\n"
-#define SWAP_FAIL "L%u: can't swap, stack too short\n"
-#define ADD_FAIL "L%u: can't add, stack too short\n"
-#define SUB_FAIL "L%u: can't sub, stack too short\n"
-#define DIV_FAIL "L%u: can't div, stack too short\n"
-#define DIV_ZERO "L%u: division by zero\n"
-#define MUL_FAIL "L%u: can't mul, stack too short\n"
-#define MOD_FAIL "L%u: can't mod, stack too short\n"
-#define PCHAR_FAIL "L%u: can't pchar, stack empty\n"
-#define PCHAR_RANGE "L%u: can't pchar, value out of range\n"
+/**
+ * push - adds node to a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void push(stack_t **stack, unsigned int line_number);
 
-/* main.c */
-void monty(args_t *args);
+/**
+ * pop - remove node from a stack of queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void pop(stack_t **stack, unsigned int line_number);
 
-/* get_func.c */
-void (*get_func(char **parsed))(stack_t **, unsigned int);
-void push_handler(stack_t **stack, unsigned int line_number);
-void pall_handler(stack_t **stack, unsigned int line_number);
+/**
+ * error - handle different errors that may come up
+ * @tokens: command split by whitespalce
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: int, EXIT_FAILURE, EXIT_SUCCESS
+ */
+int error(char **tokens, stack_t **stack, unsigned int line_number);
 
-/* handler_funcs1.c */
-void pint_handler(stack_t **stack, unsigned int line_number);
-void pop_handler(stack_t **stack, unsigned int line_number);
-void swap_handler(stack_t **stack, unsigned int line_number);
-void add_handler(stack_t **stack, unsigned int line_number);
-void nop_handler(stack_t **stack, unsigned int line_number);
+/**
+ * stack_t_len - returns number of elements in a list
+ * @stack: doubly linked list
+ * Return: number of nodes
+ */
+unsigned int stack_t_len(stack_t **stack);
 
-/* handler_funcs2.c */
-void sub_handler(stack_t **stack, unsigned int line_number);
-void div_handler(stack_t **stack, unsigned int line_number);
-void mul_handler(stack_t **stack, unsigned int line_number);
-void mod_handler(stack_t **stack, unsigned int line_number);
+/**
+ * peek - returns the value at the top of the stack or front of queue
+ * @stack: stack/queue data structure
+ * Return: integer
+ */
+int peek(stack_t **stack);
 
-/* handler_funcs3.c */
-void rotl_handler(stack_t **stack, unsigned int line_number);
-void rotr_handler(stack_t **stack, unsigned int line_number);
-void stack_handler(stack_t **stack, unsigned int line_number);
-void queue_handler(stack_t **stack, unsigned int line_number);
+/**
+ * add - adds top two items in a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void add(stack_t **stack, unsigned int line_number);
 
-/* char.c */
-void pchar_handler(stack_t **stack, unsigned int line_number);
-void pstr_handler(stack_t **stack, unsigned int line_number);
+/**
+ * nop - does nothing
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void nop(stack_t **stack, unsigned int line_number);
 
-/* strtow.c */
-int count_word(char *s);
-char **strtow(char *str);
-void free_everything(char **args);
+/**
+ * sub - subtracts top two items in a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void sub(stack_t **stack, unsigned int line_number);
 
-/* free.c */
-void free_all(int all);
+/**
+ * _div - divides top two items in a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void _div(stack_t **stack, unsigned int line_number);
 
-#endif
+/**
+ * mul - multiplies top two items in a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void mul(stack_t **stack, unsigned int line_number);
+
+/**
+ * mod - modulus of the top two items in a stack or queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void mod(stack_t **stack, unsigned int line_number);
+
+/**
+ * swap - swap the top/front two elements in a stack/list
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void swap(stack_t **stack, unsigned int line_number);
+
+/**
+ * pstr - prints out the stack/queue values as strings
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void pstr(stack_t **stack, unsigned int line_number);
+
+/**
+ * queue - changes the struct to a queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void queue(stack_t **stack, unsigned int line_number);
+
+/**
+ * _stack - changes the struct to a stack
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void _stack(stack_t **stack, unsigned int line_number);
+
+/**
+ * _mode - set or read the mode of the stack
+ *			either STACK or QUEUE
+ * @data: mode to set
+ * @mode: reading or writing
+ * Return: mode which is STACK or QUEUE
+ */
+int _mode(int data, int mode);
+
+/**
+ * _data - set or read the second operand of a command
+ * @data: number to set to
+ * @mode: reading or writing
+ * Return: data integer value
+ */
+int _data(int data, int mode);
+
+/**
+ * _error - set or read the error of the program
+ * @data: error to set
+ * @mode: reading or writing
+ * Return: mode which is READ or WRITE
+ */
+int _error(int data, int mode);
+
+/**
+ * rotr - rotates stack/queue to the bottom
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void rotr(stack_t **stack, unsigned int line_number);
+
+/**
+ * rotl - rotates stack/queue to the top
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * return: void
+ */
+void rotl(stack_t **stack, unsigned int line_number);
+
+/**
+ * queue - returns the value at the top of the stack or front of queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void queue(stack_t **stack, unsigned int line_number);
+
+/**
+ * _stack - returns the value at the top of the stack or front of queue
+ * @stack: stack/queue data structure
+ * @line_number: current line number
+ * Return: void
+ */
+void _stack(stack_t **stack, unsigned int line_number);
+
+/**
+ * find - find a string in a list of strings
+ * @list: list of strings
+ * @query: stirng to find
+ * Return: index if found, -1 if not found
+ */
+int find(char **list, char *query);
+
+/**
+ * isnumber - check whether a string is a number or not
+ *
+ *  @str: string to check
+ *
+ * Return: 0 if number, 1 otherwise
+ */
+int isnumber(char *str);
+
+#endif /* _MONTY_H_ */

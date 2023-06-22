@@ -1,74 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "monty.h"
-#include "lists.h"
-
-data_t data = DATA_INIT;
 
 /**
- * monty - helper function for main function
- * @args: pointer to struct of arguments from main
- *
- * Description: opens and reads from the file
- * containing the opcodes, and calls the function
- * that will find the corresponding executing function
- */
-void monty(args_t *args)
-{
-	size_t len = 0;
-	int get = 0;
-	void (*code_func)(stack_t **, unsigned int);
-
-	if (args->ac != 2)
-	{
-		dprintf(STDERR_FILENO, USAGE);
-		exit(EXIT_FAILURE);
-	}
-	data.fptr = fopen(args->av, "r");
-	if (!data.fptr)
-	{
-		dprintf(STDERR_FILENO, FILE_ERROR, args->av);
-		exit(EXIT_FAILURE);
-	}
-	while (1)
-	{
-		args->line_number++;
-		get = getline(&(data.line), &len, data.fptr);
-		if (get < 0)
-			break;
-		data.words = strtow(data.line);
-		if (data.words[0] == NULL || data.words[0][0] == '#')
-		{
-			free_all(0);
-			continue;
-		}
-		code_func = get_func(data.words);
-		if (!code_func)
-		{
-			dprintf(STDERR_FILENO, UNKNOWN, args->line_number, data.words[0]);
-			free_all(1);
-			exit(EXIT_FAILURE);
-		}
-		code_func(&(data.stack), args->line_number);
-		free_all(0);
-	}
-	free_all(1);
-}
-
-/**
- * main - entry point for monty bytecode interpreter
+ * main - execute a Monty script
  * @argc: number of arguments
- * @argv: array of arguments
- *
- * Return: EXIT_SUCCESS or EXIT_FAILURE
+ * @argv: list of argument strings
+ * Return: EXIT_SUCCESS, EXIT_FAILURE
  */
 int main(int argc, char *argv[])
 {
-	args_t args;
+	char buffer[256], *token, *tokens[2];
+	stack_t *stack = NULL;
+	unsigned int line_number = 1, i = 0;
+	FILE *script;
 
-	args.av = argv[1];
-	args.ac = argc;
-	args.line_number = 0;
-
-	monty(&args);
-
+	if (argc != 2)
+	{
+		fprintf(stderr, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
+	}
+	script = fopen(argv[1], "r");
+	if (script == NULL)
+	{
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		exit(EXIT_FAILURE);
+	}
+	while (fgets(buffer, sizeof(buffer), script))
+	{
+		i = 0;
+		tokens[0] = tokens[1] = NULL;
+		buffer[strcspn(buffer, "\n#")] = 0;
+		token = strtok(buffer, " \t");
+		while (token && !isspace(*token) && i < 2)
+		{
+			tokens[i++] = token;
+			token = strtok(NULL, " \t");
+		}
+		if ((!i || *tokens[0] == '#') && line_number++)
+			continue;
+		if (exec(&stack, tokens, line_number++) == EXIT_FAILURE)
+		{
+			fclose(script);
+			_free(stack);
+			return (EXIT_FAILURE);
+		}
+	}
+	fclose(script);
+	_free(stack);
 	return (EXIT_SUCCESS);
 }
